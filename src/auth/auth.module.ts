@@ -20,12 +20,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET');
         if (!secret) {
-          throw new Error('JWT_SECRET no está definido en las variables de entorno');
+          throw new Error(
+            'JWT_SECRET no está definido en las variables de entorno',
+          );
         }
         return {
           secret,
-          signOptions: { 
-            expiresIn: configService.get('JWT_EXPIRES_IN', '1h') 
+          signOptions: {
+            expiresIn: configService.get('JWT_EXPIRES_IN', '1h'),
           },
         };
       },

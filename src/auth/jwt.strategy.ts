@@ -20,17 +20,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly configService: ConfigService) {
     const secret = configService.get<string>('JWT_SECRET');
     if (!secret) {
-      throw new Error('JWT_SECRET no está definido en las variables de entorno');
+      throw new Error(
+        'JWT_SECRET no está definido en las variables de entorno',
+      );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: secret,
     });
   }
 
-  async validate(payload: JwtPayload): Promise<ValidatedUser> {
+  validate(payload: JwtPayload): ValidatedUser {
     if (!payload.id || !payload.email) {
       throw new Error('Token inválido');
     }
