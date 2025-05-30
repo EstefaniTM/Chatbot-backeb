@@ -17,26 +17,27 @@ interface ValidatedUser {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET no está definido en las variables de entorno');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET'),
+      secretOrKey: secret,
     });
   }
 
   async validate(payload: JwtPayload): Promise<ValidatedUser> {
-    // Verificamos que las propiedades existan
     if (!payload.id || !payload.email) {
       throw new Error('Token inválido');
     }
 
-    // Retornamos un objeto con tipos seguros
-    const validatedUser: ValidatedUser = {
+    return {
       id: payload.id,
-      email: payload.email
+      email: payload.email,
     };
-
-    return validatedUser;
   }
 }

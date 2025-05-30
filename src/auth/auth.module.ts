@@ -11,13 +11,24 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   imports: [
     UsersModule,
     PassportModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: { expiresIn: config.get('JWT_EXPIRES_IN') },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET no está definido en las variables de entorno');
+        }
+        return {
+          secret,
+          signOptions: { 
+            expiresIn: configService.get('JWT_EXPIRES_IN', '1h') 
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
